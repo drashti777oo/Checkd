@@ -106,3 +106,19 @@ def get_explanation(
         )
         .first()
     )
+
+
+def get_explanation_by_analysis_id(
+    db: Session,
+    user_id: uuid.UUID,
+    analysis_id: uuid.UUID,
+) -> Optional[LLMExplanation]:
+    """Retrieves LLM explanation by analysis_id enforcing user ownership in query."""
+    return (
+        db.query(LLMExplanation)
+        .filter(
+            LLMExplanation.analysis_id == analysis_id,
+            LLMExplanation.user_id == user_id,
+        )
+        .first()
+    )

@@ -27,19 +27,26 @@ export default function ResultPage() {
           setRecord(recData);
 
           try {
-            const analyses = await aiService.listMLAnalyses(1, 20);
+            const analyses = await aiService.listMLAnalyses(1, 50);
             const matchAnalysis = analyses.items.find((a) => a.health_record_id === id);
             if (matchAnalysis) {
               setAnalysis(matchAnalysis);
 
-              if (matchAnalysis.status === 'completed') {
-                try {
-                  const recs = await aiService.listRecommendations(undefined, 1, 20);
-                  const matchingRecs = recs.items.filter((r) => r.analysis_id === matchAnalysis.id);
-                  setRecommendations(matchingRecs);
-                } catch (rErr) {
-                  console.warn('Failed to load recommendations', rErr);
-                }
+              // Load Explanation
+              try {
+                const expData = await aiService.getExplanationByAnalysisId(matchAnalysis.id);
+                setExplanation(expData);
+              } catch (expErr) {
+                console.warn('No explanation found for analysis ID', expErr);
+              }
+
+              // Load Recommendations
+              try {
+                const recsData = await aiService.listRecommendations(undefined, 1, 50);
+                const matchingRecs = recsData.items.filter((r) => r.analysis_id === matchAnalysis.id);
+                setRecommendations(matchingRecs);
+              } catch (recErr) {
+                console.warn('Failed to load recommendations for analysis ID', recErr);
               }
             }
           } catch (aErr) {

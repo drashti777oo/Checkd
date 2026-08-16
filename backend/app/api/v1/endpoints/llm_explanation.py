@@ -44,6 +44,29 @@ def generate_explanation_endpoint(
         ) from err
 
 
+@router.get("/analysis/{analysis_id}", response_model=ExplanationResponse)
+def get_explanation_by_analysis_id(
+    analysis_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve LLM explanation result matching an analysis ID.
+    Returns HTTP 404 if explanation does not exist or belongs to another user.
+    """
+    explanation = llm_explanation_service.get_explanation_by_analysis_id(
+        db=db,
+        user_id=current_user.id,
+        analysis_id=analysis_id,
+    )
+    if not explanation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Explanation record not found for analysis ID",
+        )
+    return explanation
+
+
 @router.get("/{explanation_id}", response_model=ExplanationResponse)
 def get_explanation_by_id(
     explanation_id: uuid.UUID,

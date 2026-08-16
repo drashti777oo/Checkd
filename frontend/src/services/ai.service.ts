@@ -43,6 +43,11 @@ export const aiService = {
     return response.data;
   },
 
+  async getExplanationByAnalysisId(analysisId: string): Promise<ExplanationResponse> {
+    const response = await apiClient.get<ExplanationResponse>(`/explain/analysis/${analysisId}`);
+    return response.data;
+  },
+
   // Recommendation Endpoints
   async generateRecommendations(analysisId: string): Promise<RecommendationListResponse> {
     const payload: RecommendationRequest = { analysis_id: analysisId };
