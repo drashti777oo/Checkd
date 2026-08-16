@@ -63,3 +63,8 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    recommendations = relationship(
+        "Recommendation",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

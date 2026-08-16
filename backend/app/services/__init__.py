@@ -20,6 +20,12 @@ from app.services.llm_explanation_service import (
     generate_and_save_explanation,
     get_explanation,
 )
+from app.services.recommendation_service import (
+    generate_and_save_recommendations,
+    list_recommendations,
+    get_recommendation,
+    update_recommendation_status,
+)
 
 __all__ = [
     "get_user_by_id",
@@ -36,4 +42,8 @@ __all__ = [
     "list_analyses",
     "generate_and_save_explanation",
     "get_explanation",
+    "generate_and_save_recommendations",
+    "list_recommendations",
+    "get_recommendation",
+    "update_recommendation_status",
 ]

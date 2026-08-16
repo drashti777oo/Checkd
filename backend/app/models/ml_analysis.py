@@ -66,6 +66,11 @@ class MLAnalysis(Base):
         back_populates="analysis",
         cascade="all, delete-orphan",
     )
+    recommendations = relationship(
+        "Recommendation",
+        back_populates="analysis",
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         Index("ix_ml_analyses_user_created", "user_id", "created_at"),

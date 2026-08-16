@@ -27,19 +27,10 @@ Base URL: `/api/v1`
 
 #### POST `/api/v1/health/records`
 - **Auth**: Required (`Bearer <token>`)
-- **Request Body**:
-  ```json
-  {
-    "record_type": "vitals",
-    "recorded_at": "2026-08-16T12:00:00Z",
-    "data": { "heart_rate": 72, "systolic": 120, "diastolic": 80 }
-  }
-  ```
 - **Response 201 Created**: `HealthRecordResponse`
 
 #### GET `/api/v1/health/records`
 - **Auth**: Required (`Bearer <token>`)
-- **Query Parameters**: `page` (default: 1), `page_size` (default: 20, max: 100)
 - **Response 200 OK**: `HealthRecordListResponse`
 
 #### GET `/api/v1/health/records/{record_id}`
@@ -58,25 +49,29 @@ Base URL: `/api/v1`
 
 #### POST `/api/v1/analysis/assess`
 - **Auth**: Required (`Bearer <token>`)
-- **Request Body**:
-  ```json
-  {
-    "health_record_id": "987e6543-e21b-12d3-a456-426614174000"
-  }
-  ```
 - **Response 201 Created**: `MLAnalysisResponse`
-- **Response 404 Not Found**: If `health_record_id` does not exist or belongs to another user.
 
 #### GET `/api/v1/analysis/{analysis_id}`
 - **Auth**: Required (`Bearer <token>`)
 - **Response 200 OK**: `MLAnalysisResponse`
-- **Response 404 Not Found**: If analysis record does not exist or belongs to another user.
 
 ---
 
 ### 4. LLM Explanation Layer
 
 #### POST `/api/v1/explain/generate`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 201 Created / 200 OK**: `ExplanationResponse`
+
+#### GET `/api/v1/explain/{explanation_id}`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 200 OK**: `ExplanationResponse`
+
+---
+
+### 5. Personalized Actionable Recommendations Engine
+
+#### POST `/api/v1/recommendations/generate`
 - **Auth**: Required (`Bearer <token>`)
 - **Request Body**:
   ```json
@@ -87,27 +82,39 @@ Base URL: `/api/v1`
 - **Response 201 Created / 200 OK**:
   ```json
   {
-    "id": "exp98765-e21b-12d3-a456-426614174000",
-    "analysis_id": "abc12345-e21b-12d3-a456-426614174000",
-    "status": "completed",
-    "model": "gpt-4o-mini",
-    "summary": "Your observed vitals show a heart rate of 72 bpm and blood pressure of 120/80 mmHg, which align with general reference ranges.",
-    "details": [
-      "Heart rate observation: 72 bpm within typical resting range.",
-      "Blood pressure reading: 120/80 mmHg."
+    "items": [
+      {
+        "id": "rec11111-e21b-12d3-a456-426614174000",
+        "analysis_id": "abc12345-e21b-12d3-a456-426614174000",
+        "category": "activity",
+        "priority": "low",
+        "title": "Consider regular movement breaks",
+        "description": "Incorporating periodic physical activity during long stationary work sessions supports circulatory and physical posture wellness.",
+        "action": "Consider taking a brief 5-minute walking or stretching break every hour.",
+        "rationale": "Based on general wellness principles for reducing prolonged sedentary periods.",
+        "status": "active",
+        "created_at": "2026-08-16T12:00:00Z",
+        "updated_at": "2026-08-16T12:00:00Z"
+      }
     ],
-    "limitations": [
-      "This explanation is for educational purposes only and does not constitute a medical diagnosis.",
-      "Please consult a licensed healthcare professional for medical advice."
-    ],
-    "created_at": "2026-08-16T12:00:00Z",
-    "updated_at": "2026-08-16T12:00:00Z"
+    "total": 1,
+    "page": 1,
+    "page_size": 1,
+    "total_pages": 1,
+    "generation_status": "completed"
   }
   ```
-- **Response 404 Not Found**: If `analysis_id` does not exist or belongs to another user.
-- **Response 502 Bad Gateway**: If external LLM provider service is unavailable.
 
-#### GET `/api/v1/explain/{explanation_id}`
+#### GET `/api/v1/recommendations`
 - **Auth**: Required (`Bearer <token>`)
-- **Response 200 OK**: `ExplanationResponse`
-- **Response 404 Not Found**: If explanation record does not exist or belongs to another user.
+- **Query Parameters**: `status` (optional: `active`, `dismissed`, `completed`), `page` (default: 1), `page_size` (default: 20, max: 100)
+- **Response 200 OK**: `RecommendationListResponse`
+
+#### GET `/api/v1/recommendations/{recommendation_id}`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 200 OK**: `RecommendationResponse`
+
+#### PATCH `/api/v1/recommendations/{recommendation_id}`
+- **Auth**: Required (`Bearer <token>`)
+- **Request Body**: `{"status": "dismissed"}`
+- **Response 200 OK**: `RecommendationResponse`

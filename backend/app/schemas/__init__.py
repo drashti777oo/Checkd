@@ -13,6 +13,12 @@ from app.schemas.llm_explanation import (
     ExplanationRequest,
     ExplanationResponse,
 )
+from app.schemas.recommendation import (
+    RecommendationRequest,
+    RecommendationResponse,
+    RecommendationUpdate,
+    RecommendationListResponse,
+)
 
 __all__ = [
     "UserResponse",
@@ -25,4 +31,8 @@ __all__ = [
     "MLAnalysisListResponse",
     "ExplanationRequest",
     "ExplanationResponse",
+    "RecommendationRequest",
+    "RecommendationResponse",
+    "RecommendationUpdate",
+    "RecommendationListResponse",
 ]
