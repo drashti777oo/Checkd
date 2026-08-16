@@ -5,10 +5,12 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import OnboardingPage from './pages/OnboardingPage';
 
 import HealthCheckPage from './pages/HealthCheckPage';
 import HistoryPage from './pages/HistoryPage';
 import ResultPage from './pages/ResultPage';
+import CycleTrackerPage from './pages/CycleTrackerPage';
 
 function App() {
   return (
@@ -20,8 +22,10 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           
           <Route path="/check" element={<HealthCheckPage />} />
+          <Route path="/cycle" element={<CycleTrackerPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/history/:id" element={<ResultPage />} />
           

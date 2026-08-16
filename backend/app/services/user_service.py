@@ -19,6 +19,7 @@ def create_user(
     db: Session,
     email: str,
     full_name: Optional[str] = None,
+    gender: Optional[str] = None,
     user_id: Optional[uuid.UUID] = None,
     is_active: bool = True,
 ) -> User:
@@ -27,6 +28,7 @@ def create_user(
         id=user_id or uuid.uuid4(),
         email=email,
         full_name=full_name,
+        gender=gender,
         is_active=is_active,
     )
     db.add(user)
@@ -70,6 +72,8 @@ def update_user_profile(
     """Update profile attributes for an existing User."""
     if user_in.full_name is not None:
         user.full_name = user_in.full_name
+    if user_in.gender is not None:
+        user.gender = user_in.gender.lower()
     db.add(user)
     db.commit()
     db.refresh(user)

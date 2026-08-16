@@ -9,7 +9,7 @@ from app.models.base import Base
 class User(Base):
     """
     User database model.
-    Stores basic account and profile information. 
+    Stores basic account and profile information, including optional gender preference.
     Authentication credentials and tokens are managed separately by Supabase Auth.
     """
     __tablename__ = "users"
@@ -28,6 +28,10 @@ class User(Base):
     )
     full_name: Mapped[Optional[str]] = mapped_column(
         String(255),
+        nullable=True,
+    )
+    gender: Mapped[Optional[str]] = mapped_column(
+        String(50),
         nullable=True,
     )
     is_active: Mapped[bool] = mapped_column(
@@ -65,6 +69,22 @@ class User(Base):
     )
     recommendations = relationship(
         "Recommendation",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    cycle_logs = relationship(
+        "CycleLog",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    health_profile = relationship(
+        "UserHealthProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    daily_checkins = relationship(
+        "DailyCheckIn",
         back_populates="user",
         cascade="all, delete-orphan",
     )

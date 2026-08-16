@@ -8,6 +8,7 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
     full_name: Optional[str] = None
+    gender: Optional[str] = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -17,3 +18,4 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
+    gender: Optional[str] = None

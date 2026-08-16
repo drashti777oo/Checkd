@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import users, health_records, ml_analysis, llm_explanation, recommendations
+from app.api.v1.endpoints import users, health_records, ml_analysis, llm_explanation, recommendations, cycle, health_profile, checkin
 
 api_router = APIRouter()
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
@@ -7,3 +7,6 @@ api_router.include_router(health_records.router, prefix="/health/records", tags=
 api_router.include_router(ml_analysis.router, prefix="/analysis", tags=["ML Analysis"])
 api_router.include_router(llm_explanation.router, prefix="/explain", tags=["LLM Explanation"])
 api_router.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
+api_router.include_router(cycle.router, prefix="/cycle", tags=["Cycle Tracker"])
+api_router.include_router(health_profile.router, prefix="/profile", tags=["Health Profile"])
+api_router.include_router(checkin.router, prefix="/checkin", tags=["Daily Check-In"])

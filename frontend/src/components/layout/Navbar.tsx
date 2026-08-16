@@ -9,7 +9,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -20,10 +20,13 @@ export default function Navbar() {
     }
   };
 
+  const isFemale = user?.gender?.toLowerCase() === 'female';
+
   const navLinks = isAuthenticated
     ? [
         { name: 'Dashboard', path: '/dashboard' },
         { name: 'Health Check', path: '/check' },
+        ...(isFemale ? [{ name: 'Cycle Tracker', path: '/cycle' }] : []),
         { name: 'History', path: '/history' },
         { name: 'Profile', path: '/profile' },
       ]

@@ -1,4 +1,4 @@
-import { CheckCircle, AlertCircle, FileText, ArrowLeft } from 'lucide-react';
+import { CheckCircle, AlertCircle, FileText, ArrowLeft, Activity } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import RecommendationCard from '../components/shared/RecommendationCard';
@@ -75,6 +75,9 @@ export default function ResultPage() {
     : 'Recent Check';
 
   const isModelNotConfigured = analysis?.status === 'model_not_configured';
+  const extractedMetrics: any[] = record?.data?.metrics || [];
+  const symptomsText = record?.data?.symptoms;
+  const reportFilename = record?.data?.report_filename;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -86,11 +89,13 @@ export default function ResultPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Health Check Result</h1>
-          <p className="text-slate-500 mt-1">Check ID: {record?.id || id || 'latest'} • {formattedDate}</p>
+          <p className="text-slate-500 mt-1">
+            {reportFilename ? `Report: ${reportFilename}` : `Check ID: ${record?.id || id || 'latest'}`} • {formattedDate}
+          </p>
         </div>
         <div className="flex items-center gap-3 rounded-full bg-green-50 px-4 py-2 border border-green-100">
           <CheckCircle className="h-5 w-5 text-green-600" />
-          <span className="font-semibold text-green-700">Healthy</span>
+          <span className="font-semibold text-green-700">Record Saved</span>
         </div>
       </div>
 
@@ -99,19 +104,63 @@ export default function ResultPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-8">
-            {/* Main Findings */}
+
+            {/* Extracted Lab Metrics Section */}
+            {extractedMetrics.length > 0 && (
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                  Extracted Laboratory Metrics ({extractedMetrics.length})
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {extractedMetrics.map((m, i) => (
+                    <div key={i} className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-slate-500">{m.label}</span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          m.status === 'normal' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {m.status === 'normal' ? 'Normal' : 'Attention'}
+                        </span>
+                      </div>
+                      <p className="text-lg font-bold text-slate-900">
+                        {m.value} <span className="text-xs font-normal text-slate-600">{m.unit}</span>
+                      </p>
+                      {m.reference_range && (
+                        <p className="text-xs text-slate-400">Ref: {m.reference_range}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* User Symptom Context */}
+            {symptomsText && (
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-slate-500" />
+                  User Context ("How I'm Feeling")
+                </h2>
+                <p className="text-slate-700 text-sm bg-slate-50 p-4 rounded-xl italic border border-slate-100">
+                  "{symptomsText}"
+                </p>
+              </section>
+            )}
+
+            {/* Main Findings / Model Status */}
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-slate-500" />
-                Key Findings
+                ML Analysis & Findings
               </h2>
 
               {isModelNotConfigured ? (
                 <div className="rounded-xl bg-amber-50 p-4 border border-amber-200 text-amber-900 text-sm">
-                  <p className="font-semibold mb-1">ML Analysis Currently Unavailable</p>
+                  <p className="font-semibold mb-1">Analysis Currently Unavailable</p>
                   <p>
-                    The machine learning inference model is not currently configured for automated clinical predictions.
-                    Your health record data has been securely saved.
+                    The machine learning inference model is in development mode and not currently configured for automated clinical predictions.
+                    Your health record telemetry and extracted PDF metrics have been securely persisted.
                   </p>
                 </div>
               ) : (
@@ -119,15 +168,21 @@ export default function ResultPage() {
                   <li className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
                     <span className="text-slate-700">
-                      Health record telemetry submitted successfully ({record?.record_type || 'vitals'}).
+                      Health record telemetry ({record?.record_type || 'vitals'}) analyzed successfully.
                     </span>
                   </li>
-                  {record?.data?.symptoms && (
-                    <li className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-                      <span className="text-slate-700">User notes: "{record.data.symptoms}"</span>
+                  {extractedMetrics.map((m, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      {m.status === 'normal' ? (
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                      )}
+                      <span className="text-slate-700">
+                        {m.label}: {m.value} {m.unit} (Ref: {m.reference_range})
+                      </span>
                     </li>
-                  )}
+                  ))}
                 </ul>
               )}
             </section>
