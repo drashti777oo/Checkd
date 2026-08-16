@@ -30,3 +30,11 @@ export interface DailyCheckInListResponse {
   items: DailyCheckInResponse[];
   total: number;
 }
+
+export interface DailyCheckInStatsResponse {
+  current_streak: number;
+  longest_streak: number;
+  total_checkins: number;
+  checked_in_today: boolean;
+  recent_checkin_dates: string[];
+}

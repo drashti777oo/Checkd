@@ -2,7 +2,7 @@ import uuid
 import time
 import jwt
 import pytest
-from datetime import date
+from datetime import date, timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -10,6 +10,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.models.base import Base
+from app.models.daily_checkin import DailyCheckIn
 from app.core.config import settings
 from app.core.database import get_db
 
@@ -141,6 +142,53 @@ def test_submit_and_get_daily_checkin(client):
     )
     assert today_res.status_code == 200
     assert today_res.json()["sleep_hours"] == 8.0
+
+
+def test_checkin_stats_new_user(client):
+    user_id = str(uuid.uuid4())
+    token = create_token(user_id)
+
+    stats_res = client.get(
+        "/api/v1/checkin/stats",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert stats_res.status_code == 200
+    data = stats_res.json()
+    assert data["current_streak"] == 0
+    assert data["longest_streak"] == 0
+    assert data["total_checkins"] == 0
+    assert data["checked_in_today"] is False
+
+
+def test_checkin_stats_streak_calculation(client, db_session):
+    user_id = str(uuid.uuid4())
+    token = create_token(user_id)
+
+    # Submit today's check-in
+    client.post(
+        "/api/v1/checkin",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"mood": 5, "energy": 5, "stress": 1},
+    )
+
+    # Inject past consecutive check-ins (yesterday and day before yesterday)
+    today = date.today()
+    user_uuid = uuid.UUID(user_id)
+    c1 = DailyCheckIn(user_id=user_uuid, checkin_date=today - timedelta(days=1), mood=4, energy=4, stress=2)
+    c2 = DailyCheckIn(user_id=user_uuid, checkin_date=today - timedelta(days=2), mood=4, energy=4, stress=2)
+    db_session.add_all([c1, c2])
+    db_session.commit()
+
+    stats_res = client.get(
+        "/api/v1/checkin/stats",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert stats_res.status_code == 200
+    data = stats_res.json()
+    assert data["current_streak"] == 3
+    assert data["longest_streak"] == 3
+    assert data["total_checkins"] == 3
+    assert data["checked_in_today"] is True
 
 
 def test_health_profile_user_isolation(client):

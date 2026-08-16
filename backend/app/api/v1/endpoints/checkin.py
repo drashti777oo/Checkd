@@ -9,6 +9,7 @@ from app.schemas.daily_checkin import (
     DailyCheckInCreate,
     DailyCheckInResponse,
     DailyCheckInListResponse,
+    DailyCheckInStatsResponse,
 )
 from app.services import checkin_service
 
@@ -41,6 +42,17 @@ def get_today_checkin_status(
     Check if the user has already submitted a check-in today.
     """
     return checkin_service.get_today_checkin(db=db, user_id=current_user.id)
+
+
+@router.get("/stats", response_model=DailyCheckInStatsResponse)
+def get_checkin_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve user-scoped check-in streak and statistics calculated from database records.
+    """
+    return checkin_service.calculate_checkin_streak(db=db, user_id=current_user.id)
 
 
 @router.get("/history", response_model=DailyCheckInListResponse)
