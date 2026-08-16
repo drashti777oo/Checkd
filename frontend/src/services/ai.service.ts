@@ -1,14 +1,15 @@
 import { apiClient } from './api';
-import { MLAnalysisPayload, MLAnalysisResult, LLMExplanationRequest, LLMExplanationResponse } from '../types/ai';
+import { AIExplanationRequest, AIExplanationResponse } from '../types/ai';
+import { Recommendation } from '../types/health';
 
 export const aiService = {
-  async runMLAnalysis(payload: MLAnalysisPayload): Promise<MLAnalysisResult> {
-    const response = await apiClient.post<MLAnalysisResult>('/analysis/assess', payload);
+  async getExplanation(data: AIExplanationRequest): Promise<AIExplanationResponse> {
+    const response = await apiClient.post<AIExplanationResponse>('/llm-explain', data);
     return response.data;
   },
 
-  async generateLLMExplanation(payload: LLMExplanationRequest): Promise<LLMExplanationResponse> {
-    const response = await apiClient.post<LLMExplanationResponse>('/explain/generate', payload);
+  async getRecommendations(): Promise<Recommendation[]> {
+    const response = await apiClient.get<Recommendation[]>('/recommendations');
     return response.data;
-  },
+  }
 };
