@@ -1,9 +1,17 @@
-from typing import List, Dict
+from typing import Dict, Any, List
 
 
-def extract_time_series_features(signal_series: List[float]) -> Dict[str, float]:
-    """Computes mean, standard deviation, and peak-to-peak variance over vitals window."""
-    if not signal_series:
-        return {"mean": 0.0, "std": 0.0}
-    mean_val = sum(signal_series) / len(signal_series)
-    return {"mean": round(mean_val, 2), "sample_count": len(signal_series)}
+def extract_features(processed_data: Dict[str, Any]) -> List[float]:
+    """
+    Extracts generic numerical features from preprocessed telemetry payload.
+    Does not invent disease-specific thresholds or clinical scores.
+    """
+    features: List[float] = []
+    if not processed_data:
+        return features
+
+    for val in processed_data.values():
+        if isinstance(val, (int, float)):
+            features.append(float(val))
+
+    return features

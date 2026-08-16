@@ -4,6 +4,11 @@ from app.schemas.health_record import (
     HealthRecordResponse,
     HealthRecordListResponse,
 )
+from app.schemas.ml_analysis import (
+    MLAnalysisRequest,
+    MLAnalysisResponse,
+    MLAnalysisListResponse,
+)
 
 __all__ = [
     "UserResponse",
@@ -11,4 +16,7 @@ __all__ = [
     "HealthRecordCreate",
     "HealthRecordResponse",
     "HealthRecordListResponse",
+    "MLAnalysisRequest",
+    "MLAnalysisResponse",
+    "MLAnalysisListResponse",
 ]

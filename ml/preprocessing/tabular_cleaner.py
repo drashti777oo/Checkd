@@ -1,6 +1,21 @@
-from typing import List
+from typing import Dict, Any
 
 
-def clean_tabular_vitals(raw_vitals: List[float]) -> List[float]:
-    """Clamps out-of-range sensor readings and imputes missing numeric features."""
-    return [max(0.0, float(v)) for v in raw_vitals]
+def preprocess_health_data(raw_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Normalizes types, handles missing attributes, and sanitizes input telemetry.
+    No medical threshold or disease interpretation is performed here.
+    """
+    if not isinstance(raw_data, dict):
+        return {}
+
+    cleaned = {}
+    for key, value in raw_data.items():
+        if isinstance(value, (int, float)):
+            cleaned[key] = float(value)
+        elif isinstance(value, str):
+            cleaned[key] = value.strip()
+        else:
+            cleaned[key] = value
+
+    return cleaned

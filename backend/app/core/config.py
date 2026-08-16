@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     SUPABASE_JWT_ISSUER: Optional[str] = None
     SUPABASE_JWKS_URL: Optional[str] = None
 
+    # ML Pipeline Configuration
+    ML_MODEL_PATH: Optional[str] = "ml/models/classifier.pkl"
+    ML_MODEL_VERSION: str = "development-placeholder"
+
     # CORS Configuration
     FRONTEND_URL: str = "http://localhost:5173"
     BACKEND_CORS_ORIGINS: List[str] = [

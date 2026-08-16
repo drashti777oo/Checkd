@@ -11,6 +11,11 @@ from app.services.health_record_service import (
     list_health_records,
     delete_health_record,
 )
+from app.services.ml_analysis_service import (
+    create_analysis,
+    get_analysis,
+    list_analyses,
+)
 
 __all__ = [
     "get_user_by_id",
@@ -22,4 +27,7 @@ __all__ = [
     "get_health_record",
     "list_health_records",
     "delete_health_record",
+    "create_analysis",
+    "get_analysis",
+    "list_analyses",
 ]

@@ -1,17 +1,17 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any, Optional
 from sqlalchemy import String, DateTime, JSON, ForeignKey, Index, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 
-class HealthRecord(Base):
+class MLAnalysis(Base):
     """
-    HealthRecord database model.
-    Stores user-scoped health observation telemetry and metadata.
+    MLAnalysis database model.
+    Stores structured machine learning pipeline analysis results.
     """
-    __tablename__ = "health_records"
+    __tablename__ = "ml_analyses"
 
     id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -25,17 +25,24 @@ class HealthRecord(Base):
         nullable=False,
         index=True,
     )
-    record_type: Mapped[str] = mapped_column(
-        String(100),
+    health_record_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("health_records.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    recorded_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+    status: Mapped[str] = mapped_column(
+        String(50),
         nullable=False,
+        default="completed",
+        index=True,
     )
-    data: Mapped[Dict[str, Any]] = mapped_column(
+    model_version: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        default="development-placeholder",
+    )
+    result: Mapped[Dict[str, Any]] = mapped_column(
         JSON,
         nullable=False,
     )
@@ -52,13 +59,9 @@ class HealthRecord(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="health_records")
-    ml_analyses = relationship(
-        "MLAnalysis",
-        back_populates="health_record",
-        cascade="all, delete-orphan",
-    )
+    user = relationship("User", back_populates="ml_analyses")
+    health_record = relationship("HealthRecord", back_populates="ml_analyses")
 
     __table_args__ = (
-        Index("ix_health_records_user_recorded", "user_id", "recorded_at"),
+        Index("ix_ml_analyses_user_created", "user_id", "created_at"),
     )

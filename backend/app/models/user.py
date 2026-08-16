@@ -53,3 +53,8 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    ml_analyses = relationship(
+        "MLAnalysis",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
