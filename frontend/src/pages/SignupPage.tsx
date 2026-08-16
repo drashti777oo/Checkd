@@ -56,9 +56,9 @@ export default function SignupPage() {
               <motion.img
                 animate={shouldReduceMotion ? {} : { y: [0, -6, 0] }}
                 transition={{ repeat: Infinity, duration: 4.8, ease: 'easeInOut' }}
-                src="/images/arjun-sitting.jpg"
+                src="/images/boy.png"
                 alt="Create your Checkd profile"
-                className="w-full h-full object-cover scale-[1.25] translate-y-3 mix-blend-multiply opacity-95 rounded-2xl"
+                className="w-full h-full object-cover object-center mix-blend-multiply opacity-95 rounded-2xl"
               />
             </div>
             
