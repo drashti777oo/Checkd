@@ -21,4 +21,8 @@ export const cycleService = {
     const response = await apiClient.get<CyclePredictionResponse>('/cycle/prediction');
     return response.data;
   },
+
+  async deleteCycleLog(logId: string): Promise<void> {
+    await apiClient.delete(`/cycle/log/${logId}`);
+  },
 };

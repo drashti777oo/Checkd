@@ -30,6 +30,16 @@ def list_cycle_logs(db: Session, user_id: uuid.UUID) -> Tuple[List[CycleLog], in
     return items, total
 
 
+def delete_cycle_log(db: Session, user_id: uuid.UUID, log_id: uuid.UUID) -> bool:
+    """Delete a specific cycle log owned by the given user. Returns True if deleted."""
+    log = db.query(CycleLog).filter(CycleLog.id == log_id, CycleLog.user_id == user_id).first()
+    if not log:
+        return False
+    db.delete(log)
+    db.commit()
+    return True
+
+
 def get_cycle_prediction(db: Session, user_id: uuid.UUID) -> CyclePredictionResponse:
     """
     Calculates predicted next period start/end and estimated ovulation date based on user's past cycle logs.
@@ -53,8 +63,18 @@ def get_cycle_prediction(db: Session, user_id: uuid.UUID) -> CyclePredictionResp
         if diffs:
             cycle_length = int(sum(diffs) / len(diffs))
 
+    avg_period_length = 5
+    period_lengths = []
+    for log in logs:
+        if log.end_date:
+            p_len = (log.end_date - log.start_date).days
+            if 1 <= p_len <= 10:
+                period_lengths.append(p_len)
+    if period_lengths:
+        avg_period_length = int(sum(period_lengths) / len(period_lengths))
+
     next_start = last_start + timedelta(days=cycle_length)
-    next_end = next_start + timedelta(days=5)
+    next_end = next_start + timedelta(days=avg_period_length)
     ovulation_date = next_start - timedelta(days=14)
 
     return CyclePredictionResponse(
@@ -63,5 +83,5 @@ def get_cycle_prediction(db: Session, user_id: uuid.UUID) -> CyclePredictionResp
         next_predicted_end=next_end,
         predicted_ovulation_date=ovulation_date,
         average_cycle_length_days=cycle_length,
-        average_period_length_days=5,
+        average_period_length_days=avg_period_length,
     )

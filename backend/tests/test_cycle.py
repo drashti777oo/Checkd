@@ -122,3 +122,56 @@ def test_non_female_user_rejected_with_403(client, db_session):
     )
     assert log_res.status_code == 403
     assert "female" in log_res.json()["detail"].lower()
+
+
+def test_delete_cycle_log(client, db_session):
+    user_id = str(uuid.uuid4())
+    token = create_token(user_id)
+
+    # Set gender to female
+    client.patch(
+        "/api/v1/users/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"gender": "female"},
+    )
+
+    # Create a cycle log
+    log_res = client.post(
+        "/api/v1/cycle/log",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"start_date": "2026-07-01", "end_date": "2026-07-05"},
+    )
+    assert log_res.status_code == 201
+    log_id = log_res.json()["id"]
+
+    # Delete it
+    del_res = client.delete(
+        f"/api/v1/cycle/log/{log_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert del_res.status_code == 204
+
+    # Verify it's gone
+    logs_res = client.get(
+        "/api/v1/cycle/logs",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert logs_res.json()["total"] == 0
+
+
+def test_delete_nonexistent_cycle_log_returns_404(client, db_session):
+    user_id = str(uuid.uuid4())
+    token = create_token(user_id)
+
+    client.patch(
+        "/api/v1/users/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"gender": "female"},
+    )
+
+    fake_id = str(uuid.uuid4())
+    del_res = client.delete(
+        f"/api/v1/cycle/log/{fake_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert del_res.status_code == 404

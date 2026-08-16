@@ -592,21 +592,33 @@ export default function DashboardPage() {
       </div>
 
       {/* Cycle Overview & Personal Insights Cards */}
-      {isCycleEnabled && cyclePrediction?.next_predicted_start && (
+      {isCycleEnabled && (
         <motion.div variants={itemVariants} className="bg-gradient-to-r from-rose-50/80 to-pink-50/60 p-6 rounded-3xl border border-rose-200/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center">
               <Heart className="h-5 w-5 fill-rose-600" />
             </div>
             <div>
-              <h3 className="font-bold text-[#0f172a] text-sm sm:text-base">Cycle Tracker Prediction</h3>
-              <p className="text-xs text-rose-800 font-medium">
-                Next predicted period start: <span className="font-bold">{new Date(cyclePrediction.next_predicted_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-              </p>
+              <h3 className="font-bold text-[#0f172a] text-sm sm:text-base">Cycle Tracker</h3>
+              {cyclePrediction?.next_predicted_start ? (
+                <div className="space-y-0.5">
+                  <p className="text-xs text-rose-800 font-medium">
+                    Estimated next period: <span className="font-bold">{new Date(cyclePrediction.next_predicted_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  </p>
+                  {cyclePrediction.last_period_start && (() => {
+                    const dayNum = Math.floor((Date.now() - new Date(cyclePrediction.last_period_start).getTime()) / 86400000) + 1;
+                    return dayNum > 0 ? (
+                      <p className="text-[11px] text-rose-600">Cycle day {dayNum}</p>
+                    ) : null;
+                  })()}
+                </div>
+              ) : (
+                <p className="text-xs text-rose-700 font-medium">Log your first period to start tracking</p>
+              )}
             </div>
           </div>
           <Link to="/cycle" className="inline-flex items-center justify-center rounded-full bg-rose-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-rose-700 transition-colors shrink-0">
-            View Cycle Log
+            {cyclePrediction?.next_predicted_start ? 'View Cycle' : 'Open Cycle Tracker'}
           </Link>
         </motion.div>
       )}

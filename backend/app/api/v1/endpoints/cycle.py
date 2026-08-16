@@ -1,5 +1,6 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -67,3 +68,17 @@ def get_cycle_prediction(
     """
     verify_female_gender_access(current_user)
     return cycle_service.get_cycle_prediction(db=db, user_id=current_user.id)
+
+
+@router.delete("/log/{log_id}", status_code=204)
+def delete_cycle_entry(
+    log_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a specific cycle log entry for the authenticated female user."""
+    verify_female_gender_access(current_user)
+    deleted = cycle_service.delete_cycle_log(db, current_user.id, log_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Cycle log entry not found.")
+    return Response(status_code=204)
