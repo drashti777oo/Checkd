@@ -6,6 +6,10 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 
+import HealthCheckPage from './pages/HealthCheckPage';
+import HistoryPage from './pages/HistoryPage';
+import ResultPage from './pages/ResultPage';
+
 function App() {
   return (
     <BrowserRouter>
@@ -17,10 +21,9 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           
-          {/* Phase 2 pages (to be implemented) */}
-          <Route path="/check" element={<div className="p-8 text-center">Health Check (Coming soon)</div>} />
-          <Route path="/history" element={<div className="p-8 text-center">History (Coming soon)</div>} />
-          <Route path="/history/:id" element={<div className="p-8 text-center">Result (Coming soon)</div>} />
+          <Route path="/check" element={<HealthCheckPage />} />
+          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/history/:id" element={<ResultPage />} />
           
           <Route path="*" element={<div className="p-8 text-center">404 - Not Found</div>} />
         </Route>
