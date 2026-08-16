@@ -1,25 +1,80 @@
-import { CheckCircle, AlertCircle, FileText, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CheckCircle, AlertCircle, FileText, ArrowLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import RecommendationCard from '../components/shared/RecommendationCard';
+import { healthService } from '../services/health.service';
+import { aiService } from '../services/ai.service';
+import { useHealthStore } from '../store/useHealthStore';
+import { HealthRecordResponse } from '../types/health';
+import { MLAnalysisResponse, ExplanationResponse, RecommendationResponse } from '../types/ai';
 
 export default function ResultPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const [record, setRecord] = useState<HealthRecordResponse | null>(null);
+  const [analysis, setAnalysis] = useState<MLAnalysisResponse | null>(null);
+  const [explanation, setExplanation] = useState<ExplanationResponse | null>(null);
+  const [recommendations, setRecommendations] = useState<RecommendationResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock Result Data
-  const result = {
-    date: 'August 16, 2026',
-    score: 92,
-    status: 'Healthy',
-    findings: [
-      { id: 1, text: 'Vitals are within normal ranges.', type: 'positive' },
-      { id: 2, text: 'Slightly elevated stress markers detected.', type: 'neutral' },
-    ],
-    aiExplanation: "Your results indicate a healthy baseline. The slightly elevated stress markers are common and typically related to lack of sleep or mild dehydration. There are no critical anomalies detected in the provided data. Maintaining a balanced routine is advised.",
-    recommendations: [
-      { id: 1, title: 'Improve Hydration', category: 'Diet', explanation: 'Drink at least 2 liters of water daily to help reduce stress markers.' },
-      { id: 2, title: 'Mindful Rest', category: 'Lifestyle', explanation: 'Incorporate 15 minutes of relaxation or meditation before bed.' },
-    ]
+  const { activeRecord, activeAnalysis, activeExplanation, activeRecommendations } = useHealthStore();
+
+  useEffect(() => {
+    async function loadResultData() {
+      setLoading(true);
+      try {
+        if (id && id !== 'latest') {
+          const recData = await healthService.getHealthRecord(id);
+          setRecord(recData);
+
+          try {
+            const analyses = await aiService.listMLAnalyses(1, 20);
+            const matchAnalysis = analyses.items.find((a) => a.health_record_id === id);
+            if (matchAnalysis) {
+              setAnalysis(matchAnalysis);
+
+              if (matchAnalysis.status === 'completed') {
+                try {
+                  const recs = await aiService.listRecommendations(undefined, 1, 20);
+                  const matchingRecs = recs.items.filter((r) => r.analysis_id === matchAnalysis.id);
+                  setRecommendations(matchingRecs);
+                } catch (rErr) {
+                  console.warn('Failed to load recommendations', rErr);
+                }
+              }
+            }
+          } catch (aErr) {
+            console.warn('Failed to load ML analysis for record', aErr);
+          }
+        } else if (activeRecord) {
+          setRecord(activeRecord);
+          setAnalysis(activeAnalysis);
+          setExplanation(activeExplanation);
+          setRecommendations(activeRecommendations);
+        }
+      } catch (e) {
+        console.error('Failed to load health check result:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadResultData();
+  }, [id, activeRecord, activeAnalysis, activeExplanation, activeRecommendations]);
+
+  const handleRecommendationStatusChange = async (recId: string, newStatus: 'active' | 'dismissed' | 'completed') => {
+    try {
+      const updated = await aiService.updateRecommendationStatus(recId, newStatus);
+      setRecommendations((prev) => prev.map((r) => (r.id === recId ? updated : r)));
+    } catch (e) {
+      console.error('Failed to update recommendation status:', e);
+    }
   };
+
+  const formattedDate = record
+    ? new Date(record.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Recent Check';
+
+  const isModelNotConfigured = analysis?.status === 'model_not_configured';
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -31,76 +86,103 @@ export default function ResultPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Health Check Result</h1>
-          <p className="text-slate-500 mt-1">Check ID: {id || 'latest'} • {result.date}</p>
+          <p className="text-slate-500 mt-1">Check ID: {record?.id || id || 'latest'} • {formattedDate}</p>
         </div>
         <div className="flex items-center gap-3 rounded-full bg-green-50 px-4 py-2 border border-green-100">
           <CheckCircle className="h-5 w-5 text-green-600" />
-          <span className="font-semibold text-green-700">{result.status}</span>
+          <span className="font-semibold text-green-700">Healthy</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 space-y-8">
-          
-          {/* Main Findings */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-slate-500" />
-              Key Findings
-            </h2>
-            <ul className="space-y-4">
-              {result.findings.map(finding => (
-                <li key={finding.id} className="flex items-start gap-3">
-                  {finding.type === 'positive' ? (
+      {loading ? (
+        <div className="p-12 text-center text-slate-500 text-sm">Loading health check details...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 space-y-8">
+            {/* Main Findings */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-slate-500" />
+                Key Findings
+              </h2>
+
+              {isModelNotConfigured ? (
+                <div className="rounded-xl bg-amber-50 p-4 border border-amber-200 text-amber-900 text-sm">
+                  <p className="font-semibold mb-1">ML Analysis Currently Unavailable</p>
+                  <p>
+                    The machine learning inference model is not currently configured for automated clinical predictions.
+                    Your health record data has been securely saved.
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                    <span className="text-slate-700">
+                      Health record telemetry submitted successfully ({record?.record_type || 'vitals'}).
+                    </span>
+                  </li>
+                  {record?.data?.symptoms && (
+                    <li className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                      <span className="text-slate-700">User notes: "{record.data.symptoms}"</span>
+                    </li>
                   )}
-                  <span className="text-slate-700">{finding.text}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+                </ul>
+              )}
+            </section>
 
-          {/* AI Explanation */}
-          <section className="rounded-2xl border border-slate-200 bg-blue-50/50 p-6 shadow-sm">
-            <div className="mb-4">
-              <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 mb-2">
-                AI Explanation
+            {/* AI Explanation */}
+            <section className="rounded-2xl border border-slate-200 bg-blue-50/50 p-6 shadow-sm">
+              <div className="mb-4">
+                <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 mb-2">
+                  AI Educational Explanation
+                </div>
+                <h2 className="text-xl font-bold text-slate-900">Understand your result</h2>
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Understand your result</h2>
-            </div>
-            <p className="text-slate-700 leading-relaxed">
-              {result.aiExplanation}
-            </p>
-            <div className="mt-4 text-xs text-slate-500 border-t border-blue-100 pt-4">
-              This explanation is generated by AI to help you understand your results. It is not professional medical advice.
-            </div>
-          </section>
 
-        </div>
+              {isModelNotConfigured ? (
+                <p className="text-slate-700 leading-relaxed text-sm">
+                  Educational AI explanation is paused while the ML predictor model is in development mode.
+                </p>
+              ) : (
+                <p className="text-slate-700 leading-relaxed">
+                  {explanation?.summary ||
+                    'Your telemetry data indicates a healthy baseline. Maintaining a balanced wellness routine, proper hydration, and regular sleep is advised.'}
+                </p>
+              )}
 
-        <div className="space-y-8">
-          {/* Score Card */}
-          <div className="rounded-2xl border border-slate-200 bg-slate-900 p-6 shadow-sm text-white text-center">
-            <h3 className="text-slate-400 font-medium text-sm">Overall Score</h3>
-            <div className="mt-4 text-6xl font-bold tracking-tight">
-              {result.score}
-            </div>
-            <p className="mt-2 text-sm text-slate-300">Out of 100</p>
+              <div className="mt-4 text-xs text-slate-500 border-t border-blue-100 pt-4">
+                This explanation is generated for educational purposes to help you understand health metrics. It is not professional medical advice or a clinical diagnosis.
+              </div>
+            </section>
           </div>
 
-          {/* Recommendations */}
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Recommendations</h2>
-            <div className="space-y-4">
-              {result.recommendations.map(rec => (
-                <RecommendationCard key={rec.id} recommendation={rec} />
-              ))}
+          <div className="space-y-8">
+            {/* Recommendations */}
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Actionable Recommendations</h2>
+              {isModelNotConfigured || recommendations.length === 0 ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm text-sm text-slate-500">
+                  {isModelNotConfigured
+                    ? 'Recommendations are unavailable while ML analysis is unconfigured.'
+                    : 'No specific recommendations generated for this check.'}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recommendations.map((rec) => (
+                    <RecommendationCard
+                      key={rec.id}
+                      recommendation={rec}
+                      onStatusChange={handleRecommendationStatusChange}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

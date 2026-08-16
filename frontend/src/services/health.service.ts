@@ -1,34 +1,29 @@
 import { apiClient } from './api';
-import { HealthDataInput, HealthRecord, MLAnalysisResult } from '../types/health';
+import {
+  HealthRecordCreate,
+  HealthRecordResponse,
+  HealthRecordListResponse,
+} from '../types/health';
 
 export const healthService = {
-  async submitHealthData(data: HealthDataInput): Promise<{ id: string }> {
-    const response = await apiClient.post<{ id: string }>('/health-data', data);
+  async createHealthRecord(data: HealthRecordCreate): Promise<HealthRecordResponse> {
+    const response = await apiClient.post<HealthRecordResponse>('/health/records', data);
     return response.data;
   },
 
-  async getHealthHistory(): Promise<HealthRecord[]> {
-    const response = await apiClient.get<HealthRecord[]>('/health-data');
+  async listHealthRecords(page: number = 1, pageSize: number = 20): Promise<HealthRecordListResponse> {
+    const response = await apiClient.get<HealthRecordListResponse>('/health/records', {
+      params: { page, page_size: pageSize },
+    });
     return response.data;
   },
 
-  async getHealthRecord(id: string): Promise<HealthRecord> {
-    const response = await apiClient.get<HealthRecord>(`/health-data/${id}`);
+  async getHealthRecord(recordId: string): Promise<HealthRecordResponse> {
+    const response = await apiClient.get<HealthRecordResponse>(`/health/records/${recordId}`);
     return response.data;
   },
 
-  async runAnalysis(recordId: string): Promise<MLAnalysisResult> {
-    const response = await apiClient.post<MLAnalysisResult>('/ml-analysis', { recordId });
-    return response.data;
+  async deleteHealthRecord(recordId: string): Promise<void> {
+    await apiClient.delete(`/health/records/${recordId}`);
   },
-
-  async getAnalysisResult(id: string): Promise<MLAnalysisResult> {
-    const response = await apiClient.get<MLAnalysisResult>(`/ml-analysis/${id}`);
-    return response.data;
-  },
-
-  async getAnalysisHistory(): Promise<MLAnalysisResult[]> {
-    const response = await apiClient.get<MLAnalysisResult[]>('/ml-analysis/history');
-    return response.data;
-  }
 };

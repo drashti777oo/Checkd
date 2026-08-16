@@ -1,12 +1,18 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
-  createdAt: string;
+  full_name?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface AuthResponse {
-  access_token: string;
-  token_type: string;
-  user: User;
+export interface UserUpdate {
+  full_name?: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  loading: boolean;
+  isAuthenticated: boolean;
 }

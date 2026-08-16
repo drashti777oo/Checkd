@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, CheckCircle, ArrowRight, Upload } from 'lucide-react';
+import { Activity, CheckCircle, ArrowRight, Upload, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { healthService } from '../services/health.service';
+import { aiService } from '../services/ai.service';
+import { useHealthStore } from '../store/useHealthStore';
 
 type Step = 'input' | 'processing';
 
@@ -9,33 +12,90 @@ export default function HealthCheckPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('input');
   const [progress, setProgress] = useState(0);
+  const [notes, setNotes] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const {
+    setActiveRecord,
+    setActiveAnalysis,
+    setActiveExplanation,
+    setActiveRecommendations,
+  } = useHealthStore();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     setStep('processing');
+    setProgress(10);
+
+    try {
+      // Step 1: Submit Health Record
+      const record = await healthService.createHealthRecord({
+        record_type: 'vitals',
+        data: {
+          symptoms: notes,
+          submitted_at: new Date().toISOString(),
+        },
+      });
+      setActiveRecord(record);
+      setProgress(35);
+
+      // Step 2: Trigger ML Analysis
+      const analysis = await aiService.createMLAnalysis(record.id);
+      setActiveAnalysis(analysis);
+      setProgress(60);
+
+      // Explicit Check: If model is not configured, STOP downstream workflow gracefully!
+      if (analysis.status === 'model_not_configured') {
+        setProgress(100);
+        setTimeout(() => {
+          navigate(`/history/${record.id}`);
+        }, 500);
+        return;
+      }
+
+      // Step 3: Generate LLM Explanation
+      if (analysis.status === 'completed') {
+        try {
+          const explanation = await aiService.generateExplanation(analysis.id);
+          setActiveExplanation(explanation);
+        } catch (expError) {
+          console.warn('LLM explanation generation skipped or failed', expError);
+        }
+        setProgress(85);
+
+        // Step 4: Generate Recommendations
+        try {
+          const recsResponse = await aiService.generateRecommendations(analysis.id);
+          setActiveRecommendations(recsResponse.items);
+        } catch (recError) {
+          console.warn('Recommendations generation skipped or failed', recError);
+        }
+        setProgress(100);
+      }
+
+      setTimeout(() => {
+        navigate(`/history/${record.id}`);
+      }, 500);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An error occurred during health check processing.');
+      setStep('input');
+    }
   };
 
   useEffect(() => {
-    if (step === 'processing') {
+    if (step === 'processing' && progress < 90) {
       const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            // Navigate to mock result page after processing
-            setTimeout(() => navigate('/history/latest'), 500);
-            return 100;
-          }
-          return prev + Math.floor(Math.random() * 15) + 5;
-        });
-      }, 500);
+        setProgress((prev) => (prev >= 90 ? 90 : prev + 5));
+      }, 300);
       return () => clearInterval(interval);
     }
-  }, [step, navigate]);
+  }, [step, progress]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       {step === 'input' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
@@ -47,12 +107,20 @@ export default function HealthCheckPage() {
             </p>
           </div>
 
+          {errorMessage && (
+            <div className="rounded-xl bg-red-50 p-4 border border-red-100 flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+              <p className="text-sm font-medium text-red-700">{errorMessage}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">How are you feeling today?</label>
                 <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
                   className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[100px]"
                   placeholder="Describe any symptoms or how you feel..."
                 ></textarea>
@@ -93,7 +161,7 @@ export default function HealthCheckPage() {
       )}
 
       {step === 'processing' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex flex-col items-center justify-center py-20 space-y-8"
@@ -122,7 +190,7 @@ export default function HealthCheckPage() {
               ></circle>
             </svg>
           </div>
-          
+
           <div className="text-center">
             <h2 className="text-2xl font-bold text-slate-900">Analyzing your check...</h2>
             <p className="mt-2 text-slate-600">Please wait while Checkd processes your results.</p>
@@ -130,9 +198,9 @@ export default function HealthCheckPage() {
 
           <div className="w-full max-w-md space-y-3">
             {[
-              { label: 'Uploading data', progress: progress > 20 },
-              { label: 'Running ML analysis', progress: progress > 50 },
-              { label: 'Generating AI explanation', progress: progress > 80 },
+              { label: 'Uploading data', progress: progress >= 30 },
+              { label: 'Running ML analysis', progress: progress >= 60 },
+              { label: 'Generating AI explanation', progress: progress >= 85 },
             ].map((s, i) => (
               <div key={i} className="flex items-center gap-3 text-sm">
                 {s.progress ? (

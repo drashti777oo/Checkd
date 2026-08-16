@@ -1,19 +1,28 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Activity } from 'lucide-react';
 import { useState } from 'react';
+import { authService } from '../services/auth.service';
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Mock signup delay
-    setTimeout(() => {
-      setIsLoading(false);
+    setErrorMessage(null);
+    try {
+      await authService.signup(email, password, name);
       navigate('/dashboard');
-    }, 1000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to create account. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -33,6 +42,12 @@ export default function SignupPage() {
             </Link>
           </p>
         </div>
+
+        {errorMessage && (
+          <div className="rounded-md bg-red-50 p-4 border border-red-100">
+            <p className="text-sm font-medium text-red-700 text-center">{errorMessage}</p>
+          </div>
+        )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4 rounded-md shadow-sm">
@@ -45,6 +60,8 @@ export default function SignupPage() {
                 name="name"
                 type="text"
                 autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                 placeholder="Jane Doe"
@@ -59,6 +76,8 @@ export default function SignupPage() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                 placeholder="you@example.com"
@@ -73,6 +92,8 @@ export default function SignupPage() {
                 name="password"
                 type="password"
                 autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                 placeholder="••••••••"
