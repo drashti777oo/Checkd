@@ -1,14 +1,25 @@
 import { useState } from 'react';
-import { Smile, Zap, Activity, Moon, Droplets, CheckCircle2, X } from 'lucide-react';
+import { Smile, Zap, Activity, Moon, Droplets, CheckCircle2, X, AlertCircle } from 'lucide-react';
+
+/** Extracts a user-facing error message from an Axios error or standard Error. */
+function extractErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object') {
+    const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+    if (axiosErr.response?.data?.detail) return axiosErr.response.data.detail;
+    if (axiosErr.message) return axiosErr.message;
+  }
+  return 'Failed to save check-in. Please try again.';
+}
 import { checkinService } from '../../services/checkin.service';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  isUpdate?: boolean;
 }
 
-export default function DailyCheckInModal({ isOpen, onClose, onSuccess }: Props) {
+export default function DailyCheckInModal({ isOpen, onClose, onSuccess, isUpdate = false }: Props) {
   const [mood, setMood] = useState(3);
   const [energy, setEnergy] = useState(3);
   const [stress, setStress] = useState(3);
@@ -17,6 +28,7 @@ export default function DailyCheckInModal({ isOpen, onClose, onSuccess }: Props)
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -41,6 +53,7 @@ export default function DailyCheckInModal({ isOpen, onClose, onSuccess }: Props)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await checkinService.submitCheckIn({
         mood,
@@ -53,8 +66,9 @@ export default function DailyCheckInModal({ isOpen, onClose, onSuccess }: Props)
       });
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to submit daily check-in:', err);
+      setSubmitError(extractErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -69,8 +83,12 @@ export default function DailyCheckInModal({ isOpen, onClose, onSuccess }: Props)
               <Smile className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Daily Check-In</h2>
-              <p className="text-xs text-slate-500">How are you feeling today?</p>
+              <h2 className="text-lg font-bold text-slate-900">
+                {isUpdate ? "Update Today's Check-In" : 'Daily Check-In'}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {isUpdate ? 'Edit your wellness entries for today.' : 'How are you feeling today?'}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="p-1 rounded-md text-slate-400 hover:text-slate-600">
@@ -219,6 +237,14 @@ export default function DailyCheckInModal({ isOpen, onClose, onSuccess }: Props)
               className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:border-blue-500"
             ></textarea>
           </div>
+
+          {/* Inline submission error */}
+          {submitError && (
+            <div className="flex items-start gap-2 rounded-xl bg-rose-50 border border-rose-200 p-3">
+              <AlertCircle className="h-4 w-4 text-rose-600 mt-0.5 shrink-0" />
+              <p className="text-xs font-semibold text-rose-800">{submitError}</p>
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button

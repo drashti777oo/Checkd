@@ -37,3 +37,11 @@ class DailyCheckInResponse(BaseModel):
 class DailyCheckInListResponse(BaseModel):
     items: List[DailyCheckInResponse]
     total: int
+
+
+class DailyCheckInStatsResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+    total_checkins: int
+    checked_in_today: bool
+    recent_checkin_dates: List[date] = []

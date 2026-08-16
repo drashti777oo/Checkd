@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { DailyCheckInCreate, DailyCheckInResponse, DailyCheckInListResponse } from '../types/checkin';
+import { DailyCheckInCreate, DailyCheckInResponse, DailyCheckInListResponse, DailyCheckInStatsResponse } from '../types/checkin';
 
 export const checkinService = {
   async submitCheckIn(data: DailyCheckInCreate): Promise<DailyCheckInResponse> {
@@ -9,6 +9,11 @@ export const checkinService = {
 
   async getTodayCheckIn(): Promise<DailyCheckInResponse | null> {
     const response = await apiClient.get<DailyCheckInResponse | null>('/checkin/today');
+    return response.data;
+  },
+
+  async getCheckInStats(): Promise<DailyCheckInStatsResponse> {
+    const response = await apiClient.get<DailyCheckInStatsResponse>('/checkin/stats');
     return response.data;
   },
 
