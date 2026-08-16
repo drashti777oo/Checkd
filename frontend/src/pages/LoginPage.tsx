@@ -30,44 +30,100 @@ export default function LoginPage() {
     <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center bg-[#fffcf8] px-4 py-8 sm:px-6 lg:px-8 selection:bg-[#ffb800]/30 font-sans">
       <div className="w-full max-w-5xl rounded-[2.5rem] bg-white border border-slate-200/80 shadow-lg overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
         
-        {/* Left Visual Area (Desktop 45% / Mobile Top Banner) */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-[#fff7ed] via-[#fffcf8] to-emerald-50/40 p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-orange-100/80">
-          
-          {/* Top Brand Tag */}
+        {/* Left Visual Panel */}
+        <div
+          className="lg:col-span-5 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-orange-100/40 p-8 sm:p-10"
+          style={{ background: 'linear-gradient(160deg, #fff3e6 0%, #fffaf4 40%, #f0f8f0 100%)' }}
+        >
+          {/* Ambient blobs */}
+          <div className="absolute top-0 left-0 w-64 h-64 bg-amber-100/50 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-100/40 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
+
+          {/* Brand Logo */}
           <div className="relative z-10 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffb800] text-white shadow-xs">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ffb800] shadow-sm">
               <CheckCircle2 className="h-5 w-5 fill-white text-[#ffb800]" />
             </div>
             <span className="text-xl font-bold tracking-tight text-[#0f172a]">checkd</span>
           </div>
 
-          {/* Central Welcome Character Artwork */}
-          <div className="relative z-10 my-8 flex flex-col items-center text-center">
-            <div className="relative w-48 h-48 sm:w-60 sm:h-60 rounded-3xl bg-white/80 backdrop-blur-xs p-3 shadow-md border border-orange-100/80 overflow-hidden mb-6 flex items-center justify-center">
-              <motion.img
-                animate={shouldReduceMotion ? {} : { y: [0, -6, 0] }}
-                transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
-                src="/images/mia-meditation.jpg"
-                alt="Welcome back to Checkd"
-                className="w-full h-full object-cover object-center mix-blend-multiply opacity-95 rounded-2xl"
-              />
+          {/* Central Illustration + Text */}
+          <div className="relative z-10 flex flex-col items-center text-center flex-1 justify-center py-6">
+
+            {/* Image card with floating decorative accents */}
+            <div className="relative mb-7">
+              {/* Soft white card behind image */}
+              <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-[2rem] bg-white/75 shadow-lg border border-orange-100/60 flex items-center justify-center overflow-hidden">
+                <motion.img
+                  animate={shouldReduceMotion ? {} : { y: [0, -7, 0] }}
+                  transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
+                  src="/images/mia-meditation.jpg"
+                  alt="Wellness meditation illustration"
+                  className="w-full h-full object-cover object-center mix-blend-multiply"
+                />
+              </div>
+
+              {/* Floating accent — star top-left */}
+              <motion.div
+                animate={shouldReduceMotion ? {} : { y: [0, -5, 0], rotate: [0, 15, 0] }}
+                transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
+                className="absolute -top-3 -left-4 text-amber-400 text-xl pointer-events-none select-none"
+              >
+                ✦
+              </motion.div>
+
+              {/* Floating accent — leaf top-right */}
+              <motion.div
+                animate={shouldReduceMotion ? {} : { y: [0, -6, 0], rotate: [0, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 0.3 }}
+                className="absolute -top-2 -right-3 text-emerald-400 text-lg pointer-events-none select-none"
+              >
+                🌿
+              </motion.div>
+
+              {/* Floating accent — heart right-center */}
+              <motion.div
+                animate={shouldReduceMotion ? {} : { y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 3.8, ease: 'easeInOut', delay: 0.6 }}
+                className="absolute top-1/2 -right-5 -translate-y-1/2 text-rose-400 text-base pointer-events-none select-none"
+              >
+                ♡
+              </motion.div>
+
+              {/* Floating accent — moon bottom-right */}
+              <motion.div
+                animate={shouldReduceMotion ? {} : { y: [0, -4, 0] }}
+                transition={{ repeat: Infinity, duration: 4.2, ease: 'easeInOut', delay: 0.9 }}
+                className="absolute -bottom-3 -right-5 text-slate-300 text-base pointer-events-none select-none"
+              >
+                🌙
+              </motion.div>
             </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#0f172a]">Welcome back</h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-xs leading-relaxed font-normal">
-              Your health journey continues here. Log in to access your daily wellness check-ins and lab summaries.
+
+            {/* Welcome Text */}
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0f172a] mb-2 flex items-center gap-2">
+              Welcome back <span className="text-amber-400">🤍</span>
+            </h2>
+            <p className="text-sm text-slate-500 leading-relaxed max-w-[200px] font-normal">
+              Your daily wellness journey continues here.
             </p>
           </div>
 
-          {/* Trust Footer Note */}
-          <div className="relative z-10 flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white/80 backdrop-blur-xs p-2.5 px-4 rounded-full border border-slate-200/60 shadow-2xs self-center">
-            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>Private & encrypted health storage</span>
+          {/* Bottom Trust Badges */}
+          <div className="relative z-10 flex items-center justify-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 bg-white/70 border border-slate-200/60 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-xs">
+              <Lock className="h-3 w-3 text-emerald-500 shrink-0" />
+              Private
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/70 border border-slate-200/60 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-xs">
+              <ShieldCheck className="h-3 w-3 text-blue-500 shrink-0" />
+              Secure
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/70 border border-slate-200/60 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 shadow-xs">
+              <span className="text-emerald-500 text-xs shrink-0">✿</span>
+              Wellness-focused
+            </div>
           </div>
-
-          {/* Ambient Background Accents */}
-          <div className="absolute top-10 left-10 w-40 h-40 bg-amber-100/40 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute bottom-10 right-10 w-40 h-40 bg-emerald-100/30 rounded-full blur-2xl pointer-events-none" />
         </div>
 
         {/* Right Login Form Area (Desktop 55%) */}
