@@ -9,6 +9,10 @@ from app.schemas.ml_analysis import (
     MLAnalysisResponse,
     MLAnalysisListResponse,
 )
+from app.schemas.llm_explanation import (
+    ExplanationRequest,
+    ExplanationResponse,
+)
 
 __all__ = [
     "UserResponse",
@@ -19,4 +23,6 @@ __all__ = [
     "MLAnalysisRequest",
     "MLAnalysisResponse",
     "MLAnalysisListResponse",
+    "ExplanationRequest",
+    "ExplanationResponse",
 ]

@@ -1,17 +1,17 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional, List
-from sqlalchemy import String, DateTime, JSON, ForeignKey, Index, Uuid
+from typing import Dict, Any, List
+from sqlalchemy import String, Text, DateTime, JSON, ForeignKey, Index, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 
-class MLAnalysis(Base):
+class LLMExplanation(Base):
     """
-    MLAnalysis database model.
-    Stores structured machine learning pipeline analysis results.
+    LLMExplanation database model.
+    Stores user-scoped, educational plain-language explanations of MLAnalysis results.
     """
-    __tablename__ = "ml_analyses"
+    __tablename__ = "llm_explanations"
 
     id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -25,9 +25,9 @@ class MLAnalysis(Base):
         nullable=False,
         index=True,
     )
-    health_record_id: Mapped[uuid.UUID] = mapped_column(
+    analysis_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
-        ForeignKey("health_records.id", ondelete="CASCADE"),
+        ForeignKey("ml_analyses.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -37,14 +37,24 @@ class MLAnalysis(Base):
         default="completed",
         index=True,
     )
-    model_version: Mapped[str] = mapped_column(
+    model: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
-        default="development-placeholder",
+        default="gpt-4o-mini",
     )
-    result: Mapped[Dict[str, Any]] = mapped_column(
+    summary: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+    details: Mapped[List[Any]] = mapped_column(
         JSON,
         nullable=False,
+        default=list,
+    )
+    limitations: Mapped[List[Any]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=list,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -59,14 +69,10 @@ class MLAnalysis(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="ml_analyses")
-    health_record = relationship("HealthRecord", back_populates="ml_analyses")
-    llm_explanations = relationship(
-        "LLMExplanation",
-        back_populates="analysis",
-        cascade="all, delete-orphan",
-    )
+    user = relationship("User", back_populates="llm_explanations")
+    analysis = relationship("MLAnalysis", back_populates="llm_explanations")
 
     __table_args__ = (
-        Index("ix_ml_analyses_user_created", "user_id", "created_at"),
+        Index("ix_llm_explanations_user_created", "user_id", "created_at"),
+        Index("ix_llm_explanations_user_analysis", "user_id", "analysis_id"),
     )

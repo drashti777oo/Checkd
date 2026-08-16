@@ -14,17 +14,7 @@ Base URL: `/api/v1`
 
 #### GET `/api/v1/users/me`
 - **Auth**: Required (`Bearer <token>`)
-- **Response 200**:
-  ```json
-  {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "user@example.com",
-    "full_name": "Jane Doe",
-    "is_active": true,
-    "created_at": "2026-08-16T12:00:00Z",
-    "updated_at": "2026-08-16T12:00:00Z"
-  }
-  ```
+- **Response 200**: `UserResponse`
 
 #### PATCH `/api/v1/users/me`
 - **Auth**: Required (`Bearer <token>`)
@@ -74,24 +64,50 @@ Base URL: `/api/v1`
     "health_record_id": "987e6543-e21b-12d3-a456-426614174000"
   }
   ```
-- **Response 201 Created**:
-  ```json
-  {
-    "id": "abc12345-e21b-12d3-a456-426614174000",
-    "health_record_id": "987e6543-e21b-12d3-a456-426614174000",
-    "status": "model_not_configured",
-    "model_version": "development-placeholder",
-    "result": {
-      "message": "Production ML model is not configured yet. Raw features extracted successfully.",
-      "feature_count": 3
-    },
-    "created_at": "2026-08-16T12:00:00Z",
-    "updated_at": "2026-08-16T12:00:00Z"
-  }
-  ```
+- **Response 201 Created**: `MLAnalysisResponse`
 - **Response 404 Not Found**: If `health_record_id` does not exist or belongs to another user.
 
 #### GET `/api/v1/analysis/{analysis_id}`
 - **Auth**: Required (`Bearer <token>`)
 - **Response 200 OK**: `MLAnalysisResponse`
 - **Response 404 Not Found**: If analysis record does not exist or belongs to another user.
+
+---
+
+### 4. LLM Explanation Layer
+
+#### POST `/api/v1/explain/generate`
+- **Auth**: Required (`Bearer <token>`)
+- **Request Body**:
+  ```json
+  {
+    "analysis_id": "abc12345-e21b-12d3-a456-426614174000"
+  }
+  ```
+- **Response 201 Created / 200 OK**:
+  ```json
+  {
+    "id": "exp98765-e21b-12d3-a456-426614174000",
+    "analysis_id": "abc12345-e21b-12d3-a456-426614174000",
+    "status": "completed",
+    "model": "gpt-4o-mini",
+    "summary": "Your observed vitals show a heart rate of 72 bpm and blood pressure of 120/80 mmHg, which align with general reference ranges.",
+    "details": [
+      "Heart rate observation: 72 bpm within typical resting range.",
+      "Blood pressure reading: 120/80 mmHg."
+    ],
+    "limitations": [
+      "This explanation is for educational purposes only and does not constitute a medical diagnosis.",
+      "Please consult a licensed healthcare professional for medical advice."
+    ],
+    "created_at": "2026-08-16T12:00:00Z",
+    "updated_at": "2026-08-16T12:00:00Z"
+  }
+  ```
+- **Response 404 Not Found**: If `analysis_id` does not exist or belongs to another user.
+- **Response 502 Bad Gateway**: If external LLM provider service is unavailable.
+
+#### GET `/api/v1/explain/{explanation_id}`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 200 OK**: `ExplanationResponse`
+- **Response 404 Not Found**: If explanation record does not exist or belongs to another user.

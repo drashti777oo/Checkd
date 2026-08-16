@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     ML_MODEL_PATH: Optional[str] = "ml/models/classifier.pkl"
     ML_MODEL_VERSION: str = "development-placeholder"
 
+    # OpenAI / LLM Configuration
+    OPENAI_API_KEY: Optional[str] = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_TIMEOUT_SECONDS: int = 15
+
     # CORS Configuration
     FRONTEND_URL: str = "http://localhost:5173"
     BACKEND_CORS_ORIGINS: List[str] = [

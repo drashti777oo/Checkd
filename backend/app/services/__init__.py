@@ -16,6 +16,10 @@ from app.services.ml_analysis_service import (
     get_analysis,
     list_analyses,
 )
+from app.services.llm_explanation_service import (
+    generate_and_save_explanation,
+    get_explanation,
+)
 
 __all__ = [
     "get_user_by_id",
@@ -30,4 +34,6 @@ __all__ = [
     "create_analysis",
     "get_analysis",
     "list_analyses",
+    "generate_and_save_explanation",
+    "get_explanation",
 ]

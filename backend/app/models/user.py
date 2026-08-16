@@ -58,3 +58,8 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    llm_explanations = relationship(
+        "LLMExplanation",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
