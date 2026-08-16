@@ -4,34 +4,103 @@ Base URL: `/api/v1`
 
 ## Standard Headers
 - `Content-Type: application/json`
-- `Authorization: Bearer <SUPABASE_JWT_TOKEN>` (for authenticated endpoints)
+- `Authorization: Bearer <SUPABASE_JWT_TOKEN>` (for all protected endpoints)
 
 ---
 
-## Endpoint Index
+## Endpoint Specification
 
-### Auth Validation
-- `GET /api/v1/auth/me`
-  - **Auth**: Required
-  - **Response**: `UserRead` (User profile & metadata)
+### 1. User Profile
 
-### Health Data Records
-- `GET /api/v1/health/records`
-  - **Auth**: Required
-  - **Response**: List of `HealthRecordResponse`
-- `POST /api/v1/health/records`
-  - **Auth**: Required
-  - **Body**: `HealthRecordCreate` schema (vitals, metrics)
-  - **Response**: Created `HealthRecordResponse`
+#### GET `/api/v1/users/me`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 200**:
+  ```json
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "email": "user@example.com",
+    "full_name": "Jane Doe",
+    "is_active": true,
+    "created_at": "2026-08-16T12:00:00Z",
+    "updated_at": "2026-08-16T12:00:00Z"
+  }
+  ```
 
-### ML Risk Analysis
-- `POST /api/v1/analysis/assess`
-  - **Auth**: Required
-  - **Body**: `MLAnalysisInput` (tabular signals / image feature vectors)
-  - **Response**: `MLAnalysisResult` (risk score, predicted category, confidence)
+#### PATCH `/api/v1/users/me`
+- **Auth**: Required (`Bearer <token>`)
+- **Request Body**:
+  ```json
+  {
+    "full_name": "Updated Name"
+  }
+  ```
+- **Response 200**: `UserResponse`
 
-### LLM Explanation
-- `POST /api/v1/explain/generate`
-  - **Auth**: Required
-  - **Body**: `LLMExplanationRequest` (metrics, user question)
-  - **Response**: `LLMExplanationResponse` (patient-friendly plain language summary, guidance)
+---
+
+### 2. Health Records & Telemetry Data Layer
+
+#### POST `/api/v1/health/records`
+- **Auth**: Required (`Bearer <token>`)
+- **Request Body**:
+  ```json
+  {
+    "record_type": "vitals",
+    "recorded_at": "2026-08-16T12:00:00Z",
+    "data": {
+      "heart_rate": 72,
+      "systolic": 120,
+      "diastolic": 80
+    }
+  }
+  ```
+- **Response 201 Created**:
+  ```json
+  {
+    "id": "987e6543-e21b-12d3-a456-426614174000",
+    "record_type": "vitals",
+    "recorded_at": "2026-08-16T12:00:00Z",
+    "data": {
+      "heart_rate": 72,
+      "systolic": 120,
+      "diastolic": 80
+    },
+    "created_at": "2026-08-16T12:00:00Z",
+    "updated_at": "2026-08-16T12:00:00Z"
+  }
+  ```
+
+#### GET `/api/v1/health/records`
+- **Auth**: Required (`Bearer <token>`)
+- **Query Parameters**:
+  - `page` (default: 1)
+  - `page_size` (default: 20, max: 100)
+- **Response 200 OK**:
+  ```json
+  {
+    "items": [
+      {
+        "id": "987e6543-e21b-12d3-a456-426614174000",
+        "record_type": "vitals",
+        "recorded_at": "2026-08-16T12:00:00Z",
+        "data": { "heart_rate": 72 },
+        "created_at": "2026-08-16T12:00:00Z",
+        "updated_at": "2026-08-16T12:00:00Z"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 20,
+    "total_pages": 1
+  }
+  ```
+
+#### GET `/api/v1/health/records/{record_id}`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 200 OK**: `HealthRecordResponse`
+- **Response 404 Not Found**: If record does not exist or belongs to another user (user isolation enforced).
+
+#### DELETE `/api/v1/health/records/{record_id}`
+- **Auth**: Required (`Bearer <token>`)
+- **Response 204 No Content**: Successfully deleted.
+- **Response 404 Not Found**: If record does not exist or belongs to another user.
