@@ -155,9 +155,9 @@ export function HowItWorksSection() {
               {/* Card Image Illustration + Floating Mini Data Cards */}
               <div className="h-48 bg-gradient-to-b from-blue-50/70 to-indigo-50/40 rounded-2xl overflow-hidden relative border border-blue-100/60 flex items-center justify-center">
                 <img
-                  src="/images/arjun-sitting.jpg"
+                  src="/images/boy.png"
                   alt="Understand health data analysis illustration"
-                  className="w-full h-full object-cover scale-[1.25] translate-y-3 mix-blend-multiply opacity-95 group-hover:scale-[1.3] transition-transform duration-500"
+                  className="w-full h-full object-cover object-center mix-blend-multiply opacity-95 group-hover:scale-105 transition-transform duration-500"
                 />
 
                 {/* Staggered Floating Mini-Data Cards */}
@@ -225,7 +225,7 @@ export function HowItWorksSection() {
               {/* Card Image Illustration + Floating Wellness Accents */}
               <div className="h-48 bg-gradient-to-b from-emerald-50/70 to-teal-50/40 rounded-2xl overflow-hidden relative border border-emerald-100/60 flex items-center justify-center">
                 <img
-                  src="/images/mia-meditation.jpg"
+                  src="/images/medate.png"
                   alt="Improve health habits illustration"
                   className="w-full h-full object-cover object-center mix-blend-multiply opacity-95 group-hover:scale-105 transition-transform duration-500"
                 />
