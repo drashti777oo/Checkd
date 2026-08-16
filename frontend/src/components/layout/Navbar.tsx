@@ -27,7 +27,12 @@ export default function Navbar() {
         { name: 'History', path: '/history' },
         { name: 'Profile', path: '/profile' },
       ]
-    : [{ name: 'Home', path: '/' }];
+    : [
+        { name: 'Home', path: '/' },
+        { name: 'Features', path: '#features' },
+        { name: 'How it works', path: '#how-it-works' },
+        { name: 'Why Checkd', path: '#why-checkd' },
+      ];
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#fffcf8]">
@@ -44,18 +49,38 @@ export default function Navbar() {
 
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex md:items-center md:gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                'text-sm font-semibold transition-colors hover:text-[#ffb800]',
-                location.pathname === link.path ? 'text-[#ffb800] border-b-2 border-[#ffb800] pb-1' : 'text-[#334155]'
-              )}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isHash = link.path.startsWith('#');
+            const isActive = isHash ? location.hash === link.path : location.pathname === link.path;
+            
+            if (isHash) {
+              return (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  className={cn(
+                    'text-sm font-semibold transition-colors hover:text-[#ffb800]',
+                    isActive ? 'text-[#ffb800] border-b-2 border-[#ffb800] pb-1' : 'text-[#334155]'
+                  )}
+                >
+                  {link.name}
+                </a>
+              );
+            }
+
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  'text-sm font-semibold transition-colors hover:text-[#ffb800]',
+                  isActive ? 'text-[#ffb800] border-b-2 border-[#ffb800] pb-1' : 'text-[#334155]'
+                )}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Desktop Auth Buttons */}
@@ -98,19 +123,40 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden border-b border-slate-200 bg-white">
           <div className="space-y-1 px-4 pb-4 pt-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  'block rounded-md px-3 py-3 text-base font-medium',
-                  location.pathname === link.path ? 'bg-[#fffcf8] text-[#ffb800]' : 'text-[#0f172a] hover:bg-slate-50'
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isHash = link.path.startsWith('#');
+              const isActive = isHash ? location.hash === link.path : location.pathname === link.path;
+
+              if (isHash) {
+                return (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      'block rounded-md px-3 py-3 text-base font-medium',
+                      isActive ? 'bg-[#fffcf8] text-[#ffb800]' : 'text-[#0f172a] hover:bg-slate-50'
+                    )}
+                  >
+                    {link.name}
+                  </a>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    'block rounded-md px-3 py-3 text-base font-medium',
+                    isActive ? 'bg-[#fffcf8] text-[#ffb800]' : 'text-[#0f172a] hover:bg-slate-50'
+                  )}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
             <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-slate-100">
               {isAuthenticated ? (
                 <button
