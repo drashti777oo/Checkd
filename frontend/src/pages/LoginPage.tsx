@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Activity } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { authService } from '../services/auth.service';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,82 +20,147 @@ export default function LoginPage() {
       await authService.login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to sign in. Please check your credentials.');
+      setErrorMessage(err.message || 'Failed to sign in. Please check your email and password.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-        <div className="flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white mb-4">
-            <Activity className="h-6 w-6" />
+    <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center bg-[#fffcf8] px-4 py-8 sm:px-6 lg:px-8 selection:bg-[#ffb800]/30 font-sans">
+      <div className="w-full max-w-5xl rounded-[2.5rem] bg-white border border-slate-200/80 shadow-lg overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
+        
+        {/* Left Visual Area (Desktop 45% / Mobile Top Banner) */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-[#fff7ed] via-[#fffcf8] to-emerald-50/40 p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-orange-100/80">
+          
+          {/* Top Brand Tag */}
+          <div className="relative z-10 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ffb800] text-white shadow-xs">
+              <CheckCircle2 className="h-5 w-5 fill-white text-[#ffb800]" />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-[#0f172a]">checkd</span>
           </div>
-          <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">
-            Welcome back
-          </h2>
-          <p className="mt-2 text-center text-sm text-slate-600">
-            Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-              Sign up
-            </Link>
-          </p>
+
+          {/* Central Welcome Character Artwork */}
+          <div className="relative z-10 my-8 flex flex-col items-center text-center">
+            <div className="relative w-48 h-48 sm:w-60 sm:h-60 rounded-3xl bg-white/80 backdrop-blur-xs p-3 shadow-md border border-orange-100/80 overflow-hidden mb-6 flex items-center justify-center">
+              <motion.img
+                animate={shouldReduceMotion ? {} : { y: [0, -6, 0] }}
+                transition={{ repeat: Infinity, duration: 4.5, ease: 'easeInOut' }}
+                src="/images/mia-meditation.jpg"
+                alt="Welcome back to Checkd"
+                className="w-full h-full object-cover object-center mix-blend-multiply opacity-95 rounded-2xl"
+              />
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#0f172a]">Welcome back</h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-xs leading-relaxed font-normal">
+              Your health journey continues here. Log in to access your daily wellness check-ins and lab summaries.
+            </p>
+          </div>
+
+          {/* Trust Footer Note */}
+          <div className="relative z-10 flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white/80 backdrop-blur-xs p-2.5 px-4 rounded-full border border-slate-200/60 shadow-2xs self-center">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>Private & encrypted health storage</span>
+          </div>
+
+          {/* Ambient Background Accents */}
+          <div className="absolute top-10 left-10 w-40 h-40 bg-amber-100/40 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-emerald-100/30 rounded-full blur-2xl pointer-events-none" />
         </div>
 
-        {errorMessage && (
-          <div className="rounded-md bg-red-50 p-4 border border-red-100">
-            <p className="text-sm font-medium text-red-700 text-center">{errorMessage}</p>
-          </div>
-        )}
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
+        {/* Right Login Form Area (Desktop 55%) */}
+        <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white">
+          <div className="max-w-md mx-auto w-full space-y-7">
+            
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-slate-700">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-                placeholder="you@example.com"
-              />
+              <h1 className="text-3xl font-bold text-[#0f172a] tracking-tight">Sign in to your account</h1>
+              <p className="mt-1.5 text-sm text-slate-500 font-normal">
+                Enter your credentials to continue your daily wellness tracking.
+              </p>
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
+            {/* Error Alert Box */}
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl bg-rose-50 p-4 border border-rose-200 text-rose-800 text-xs sm:text-sm font-medium"
+              >
+                {errorMessage}
+              </motion.div>
+            )}
+
+            {/* Form Inputs */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="email-address" className="block text-xs font-semibold text-[#0f172a] mb-1.5">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    id="email-address"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full rounded-xl border border-slate-300 pl-10 pr-4 py-3 text-sm text-[#0f172a] placeholder-slate-400 transition-all focus:border-[#ffb800] focus:ring-2 focus:ring-[#ffb800]/20 focus:outline-none"
+                    placeholder="you@example.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="password" className="block text-xs font-semibold text-[#0f172a]">
+                    Password
+                  </label>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full rounded-xl border border-slate-300 pl-10 pr-4 py-3 text-sm text-[#0f172a] placeholder-slate-400 transition-all focus:border-[#ffb800] focus:ring-2 focus:ring-[#ffb800]/20 focus:outline-none"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full inline-flex h-12 items-center justify-center rounded-xl bg-[#0f172a] px-6 text-sm font-semibold text-white shadow-md transition-all hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f172a] focus-visible:ring-offset-2"
+                >
+                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {!isLoading && <ArrowRight className="ml-2 h-4 w-4 text-[#ffb800]" />}
+                </button>
+              </motion.div>
+            </form>
+
+            {/* Navigation Link to Signup */}
+            <div className="pt-4 border-t border-slate-100 text-center">
+              <p className="text-sm text-slate-600">
+                Don't have an account yet?{' '}
+                <Link to="/signup" className="font-semibold text-[#0f172a] hover:text-[#ffb800] transition-colors underline underline-offset-4">
+                  Create account
+                </Link>
+              </p>
+            </div>
+
           </div>
-        </form>
+        </div>
+
       </div>
     </div>
   );
